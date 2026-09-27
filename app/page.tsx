@@ -55,5 +55,48 @@ export default function Home(){
    <div><h2>Ce que l'application détecte</h2><p>용접사 · 알곤용접 · TIG · CO2용접 · 배관용접 · 조선소 · 플랜트 · 제관용접 · 철골용접</p><p>Le moteur extrait aussi les numéros 010-xxxx-xxxx, les villes et les indications de salaire.</p></div>
    <div><h2>Candidature</h2><p>Mobile : ouvre le composeur SMS. Windows : ouvre le système de messagerie Windows avec le numéro et le message préremplis. Aucun SMS n'est envoyé automatiquement.</p></div>
   </section>
+
+  <section className="card app-description">
+   <div>
+    <span className="eyebrow">ABOUT BAND JOB FINDER</span>
+    <h2>Application Description / 앱 소개</h2>
+
+    <h3>🇬🇧 English</h3>
+    <p>
+     BAND Job Finder is a personal job-search assistant designed to help users find relevant welding and industrial job postings shared on BAND.
+     The application uses the BAND Open API to retrieve authorized BAND posts, then filters them by job-related keywords such as welding, TIG, CO2, pipe welding, shipyard and plant work.
+     It extracts useful information already published in the posts, such as location, contact phone number and salary information, and presents the results in a simple dashboard.
+    </p>
+    <p>
+     The application does not automatically send messages, publish posts or contact BAND members.
+     When a user chooses to apply, the application only prepares an SMS with the phone number and a predefined application message; the user reviews and sends the message manually.
+     The purpose is to help the user organize publicly/shared job information and respond individually to relevant job opportunities.
+    </p>
+
+    <h3>🇰🇷 한국어</h3>
+    <p>
+     BAND Job Finder는 BAND에 공유된 용접 및 산업 현장 구인 정보를 사용자가 쉽게 찾을 수 있도록 도와주는 개인용 구직 보조 애플리케이션입니다.
+     BAND Open API를 통해 허가된 게시물을 가져온 후 용접, 알곤(TIG), CO2, 배관용접, 조선소, 플랜트 등 구직 관련 키워드를 기준으로 관련 게시물을 필터링합니다.
+     게시물에 이미 포함되어 있는 근무 지역, 연락처, 급여 등의 정보를 추출하여 간단한 대시보드에서 확인할 수 있도록 제공합니다.
+    </p>
+    <p>
+     본 애플리케이션은 자동으로 메시지를 발송하거나 게시물을 작성하거나 BAND 회원에게 자동으로 연락하지 않습니다.
+     사용자가 지원을 선택하면 연락처와 지원 메시지를 SMS 작성 화면에 미리 입력해 주며, 최종 확인 및 발송은 사용자가 직접 수행합니다.
+     목적은 사용자가 관련 구인 정보를 정리하고 필요한 채용 공고에 개별적으로 지원할 수 있도록 돕는 것입니다.
+    </p>
+
+    <div className="notice">
+     <strong>Privacy & API Use / 개인정보 및 API 사용</strong>
+     <p>
+      The application uses only data made available through the authorized BAND API and is intended for personal job-search use.
+      API credentials are stored server-side and are not exposed in the browser.
+     </p>
+     <p>
+      본 애플리케이션은 승인된 BAND API를 통해 제공되는 정보만 사용하며 개인적인 구직 목적으로 사용됩니다.
+      API 인증 정보는 서버 측에 안전하게 보관하며 브라우저에 노출하지 않습니다.
+     </p>
+    </div>
+   </div>
+  </section>
  </main>
 }
