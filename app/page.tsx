@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { parseBandPost } from "../lib/band-parser";
 
 const rows=[
@@ -29,6 +30,13 @@ function prepareSms(phone:string, body:string){
 }
 
 export default function Home(){
+ const [bandPage,setBandPage]=React.useState("");
+ const [parsedPage,setParsedPage]=React.useState<ReturnType<typeof parseBandPost>[]|null>(null);
+ const analyzeBandPage=()=>{
+  const blocks=bandPage.split(/\\n(?=# Posted on|#\\s*Posted on)/).filter(Boolean);
+  const results=blocks.map((block)=>parseBandPost(block)).filter((item)=>item.isRelevant || item.phones.length || item.locations.length || item.salary);
+  setParsedPage(results);
+ };
  return <main className="shell">
   <header><div><span className="eyebrow">BAND JOB FINDER</span><h1>Offres détectées</h1><p>Les annonces correspondant à tes critères apparaîtront ici avec le numéro du responsable et le message de candidature à envoyer.</p></div><span className="status">SMS automatique désactivé</span></header>
   <section className="stats">
@@ -54,6 +62,28 @@ export default function Home(){
   <section className="card grid">
    <div><h2>Ce que l'application détecte</h2><p>용접사 · 알곤용접 · TIG · CO2용접 · 배관용접 · 조선소 · 플랜트 · 제관용접 · 철골용접</p><p>Le moteur extrait aussi les numéros 010-xxxx-xxxx, les villes et les indications de salaire.</p></div>
    <div><h2>Candidature</h2><p>Mobile : ouvre le composeur SMS. Windows : ouvre le système de messagerie Windows avec le numéro et le message préremplis. Aucun SMS n'est envoyé automatiquement.</p></div>
+  </section>
+
+  <section className="card">
+   <div className="cardhead"><h2>Importer une page BAND</h2><span>Mode manuel</span></div>
+   <p>Copie-colle le contenu d'une page BAND complète ici. L'application extrait les annonces pertinentes, téléphones, villes, mots-clés et salaires.</p>
+   <textarea
+    value={bandPage}
+    onChange={(e)=>setBandPage(e.target.value)}
+    placeholder="Colle ici toute la page BAND copiée..."
+    style={{width:"100%",minHeight:220,padding:16,borderRadius:12,border:"1px solid #ddd",fontFamily:"inherit",resize:"vertical"}}
+   />
+   <div style={{marginTop:12,display:"flex",gap:12,alignItems:"center"}}>
+    <button onClick={analyzeBandPage} disabled={!bandPage.trim()}>🔎 Analyser la page</button>
+    <span>{bandPage ? `${bandPage.length.toLocaleString()} caractères` : "Aucune donnée"}</span>
+   </div>
+   {parsedPage && <div style={{marginTop:20}}>
+    <h3>{parsedPage.length} annonce(s) détectée(s)</h3>
+    {parsedPage.map((item,i)=><div key={i} style={{padding:"14px 0",borderBottom:"1px solid #eee"}}>
+     <strong>{item.matchedKeywords.join(" · ") || "Information détectée"}</strong>
+     <div>📍 {item.locations.join(", ") || "Lieu non détecté"} · 📞 {item.phones.join(", ") || "Téléphone non détecté"} · 💰 {item.salary || "Salaire non détecté"}</div>
+    </div>)}
+   </div>}
   </section>
 
   <section className="card app-description">
