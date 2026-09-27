@@ -15,7 +15,15 @@ const message=(r:typeof rows[number]) =>
 
 function prepareSms(phone:string, body:string){
  const normalized=phone.replace(/[^0-9+]/g,"");
- window.location.href=`sms:${normalized}?body=${encodeURIComponent(body)}`;
+ const encoded=encodeURIComponent(body);
+ const isWindows=/Windows/i.test(navigator.userAgent);
+ if(isWindows){
+   // Official Windows messaging URI. The user still confirms/sends the message.
+   window.location.href=`ms-chat:?Addresses=${encodeURIComponent(normalized)}&Body=${encoded}`;
+ }else{
+   // Android/iPhone: open the device's SMS composer.
+   window.location.href=`sms:${normalized}?body=${encoded}`;
+ }
 }
 
 export default function Home(){
@@ -33,7 +41,7 @@ export default function Home(){
   </section>
   <section className="card grid">
    <div><h2>Ce que l'application détecte</h2><p>용접사 · 알곤용접 · TIG · CO2용접 · 배관용접 · 조선소 · 플랜트 · 제관용접</p></div>
-   <div><h2>Candidature</h2><p>Un clic ouvre le composeur SMS de l'appareil avec le numéro et le message préremplis. Aucun SMS n'est envoyé automatiquement.</p></div>
+   <div><h2>Candidature</h2><p>Mobile : ouvre le composeur SMS. Windows : ouvre le système de messagerie Windows avec le numéro et le message préremplis. Aucun SMS n'est envoyé automatiquement.</p></div>
   </section>
  </main>
 }
