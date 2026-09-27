@@ -1,1 +1,0 @@
-import {NextResponse} from "next/server"; export async function POST(req:Request){const body=await req.json().catch(()=>null); if(!body?.phone||!body?.message)return NextResponse.json({ok:false,error:"phone and message required"},{status:400}); return NextResponse.json({ok:true,status:"queued",phone:body.phone,message:body.message})}
