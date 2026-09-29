@@ -11,8 +11,8 @@ export const LOCATION_KEYWORDS = [
 ] as const;
 
 const phonePatterns = [
-  /01[016789][- .]?\\d{3,4}[- .]?\\d{4}/g,
-  /01[016789]\\d{7,8}/g
+  /01[016789][ -]?\d{3,4}[ -]?\d{4}/g,
+  /01[016789]\d{7,8}/g
 ];
 
 export type ParsedJob = {
@@ -25,7 +25,7 @@ export type ParsedJob = {
 
 export function parseBandPost(text: string): ParsedJob {
   const source = text || "";
-  const normalized = source.replace(/[\\u2010-\\u2015]/g, "-");
+  const normalized = source.replace(/[\u2010-\u2015]/g, "-");
   const lower = normalized.toLowerCase();
 
   const matchedKeywords = JOB_KEYWORDS.filter((keyword) =>
@@ -49,13 +49,21 @@ export function parseBandPost(text: string): ParsedJob {
     )
   );
 
-  const salaryMatch = normalized.match(
-    /(?:일당|일급|급여|월급|시급|단가|급여조건)[^\\n]{0,20}?(\\d{1,3}(?:,\\d{3})*|\\d{4,})\\s*(만원|원|만)?/i
-  );
+  // Handles formats such as:
+  // 일당160,000원~240,000원
+  // 일당 160,000원 ~ 240,000원
+  // 월급 350만원
+  // 시급 13,000원
+  const salaryRegex =
+    /(?:일당|일급|급여|월급|시급|단가|급여조건)\s*[:：]?\s*\d{1,3}(?:,\d{3})*(?:\s*(?:원|만원))?(?:\s*[~〜-]\s*\d{1,3}(?:,\d{3})*(?:\s*(?:원|만원))?)?/i;
 
+  const directAmountRegex =
+    /\b\d{1,3}(?:,\d{3})+(?:\s*(?:원|만원))?\b/;
+
+  const salaryMatch = normalized.match(salaryRegex);
   const salary = salaryMatch
     ? salaryMatch[0].trim()
-    : null;
+    : normalized.match(directAmountRegex)?.[0]?.trim() ?? null;
 
   return {
     isRelevant: matchedKeywords.length > 0,
