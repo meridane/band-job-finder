@@ -6,6 +6,7 @@ import Link from "next/link";
 type Job = {
   id: string;
   title: string;
+  titleFr?: string;
   phone: string;
   contactLabel?: string;
   salary: string;
@@ -49,15 +50,6 @@ type AIJob = {
   summary_fr: string | null;
 };
 
-const keywords = [
-  ["용접", "용접"],
-  ["조선소", "조선소"],
-  ["알곤/TIG", "알곤"],
-  ["CO2", "CO2"],
-  ["배관용접", "배관용접"],
-  ["기계", "기계"],
-];
-
 const aiFields: Array<[keyof AIJob, string]> = [
   ["job", "Poste"],
   ["industry", "Secteur"],
@@ -78,10 +70,8 @@ const aiFields: Array<[keyof AIJob, string]> = [
 ];
 
 export default function LivingBlogJobs() {
-  const [keyword, setKeyword] = React.useState("용접");
-  const [region, setRegion] = React.useState("26000");
   const [jobs, setJobs] = React.useState<Job[]>([]);
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
   const [selectedJob, setSelectedJob] = React.useState<Job | null>(null);
   const [detail, setDetail] = React.useState<JobDetail | null>(null);
@@ -91,21 +81,25 @@ export default function LivingBlogJobs() {
   const [aiLoading, setAiLoading] = React.useState(false);
   const [aiError, setAiError] = React.useState("");
 
-  async function search() {
+  async function searchWeldingJobs() {
     setLoading(true);
     setError("");
     try {
-      const r = await fetch(`/api/livingsblog?keyword=${encodeURIComponent(keyword)}&region=${encodeURIComponent(region)}`);
+      const r = await fetch("/api/livingsblog", { cache: "no-store" });
       const data = await r.json();
-      if (!r.ok || !data.ok) throw new Error(data.error || "검색 실패");
+      if (!r.ok || !data.ok) throw new Error(data.error || "Recherche impossible");
       setJobs(data.jobs || []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "검색 중 오류");
+      setError(e instanceof Error ? e.message : "Erreur pendant la recherche");
       setJobs([]);
     } finally {
       setLoading(false);
     }
   }
+
+  React.useEffect(() => {
+    searchWeldingJobs();
+  }, []);
 
   async function openDetail(job: Job) {
     setSelectedJob(job);
@@ -147,44 +141,70 @@ export default function LivingBlogJobs() {
       <header>
         <div>
           <span className="eyebrow">LIVINGBLOG JOB FINDER</span>
-          <h1>Livingsblog 구인 검색</h1>
-          <p>Recherche d'annonces publiques Livingsblog pendant l'intégration de BAND / Saramin.</p>
+          <h1>Offres de soudage</h1>
+          <p>
+            Recherche automatique des annonces liées au soudage : CO₂, TIG, MIG, Argon,
+            tuyauterie, soudage naval, chaudronnerie, structures métalliques, etc.
+          </p>
         </div>
-        <Link href="/" style={{ textDecoration: "none", padding: "10px 14px", borderRadius: 10, background: "#ff5722", color: "#fff", fontWeight: 700 }}>
-          ← Job Finder
-        </Link>
+        <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          <span style={{padding:"8px 12px",borderRadius:999,background:"#fff3ed",color:"#d84315",fontWeight:700}}>
+            🇰🇷 Busan / région 26000
+          </span>
+          <button
+            onClick={searchWeldingJobs}
+            disabled={loading}
+            style={{border:0,borderRadius:10,background:"#ff5722",color:"#fff",padding:"10px 14px",fontWeight:700,cursor:"pointer"}}
+          >
+            {loading ? "Recherche..." : "↻ Actualiser"}
+          </button>
+          <Link href="/" style={{textDecoration:"none",padding:"10px 14px",borderRadius:10,background:"#ff5722",color:"#fff",fontWeight:700}}>
+            ← Job Finder
+          </Link>
+        </div>
       </header>
 
       <section className="card">
-        <div className="cardhead"><h2>Recherche</h2><span>Source: job.livingsblog.com</span></div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
-          <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="용접" style={{ flex: 1, minWidth: 180, padding: 12, border: "1px solid #ddd", borderRadius: 10 }} />
-          <input value={region} onChange={e => setRegion(e.target.value)} placeholder="26000" style={{ width: 130, padding: 12, border: "1px solid #ddd", borderRadius: 10 }} />
-          <button onClick={search} disabled={loading} style={{ border: 0, borderRadius: 10, background: "#ff5722", color: "#fff", padding: "12px 18px", fontWeight: 700 }}>
-            {loading ? "Recherche..." : "🔎 Rechercher"}
-          </button>
+        <div className="cardhead">
+          <h2>{loading ? "Recherche automatique..." : `${jobs.length} offre(s) de soudage`}</h2>
+          <span>Filtrage automatique par mots-clés coréens</span>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
-          {keywords.map(([label, value]) => <button key={value} onClick={() => setKeyword(value)} style={{ border: "1px solid #ddd", borderRadius: 999, background: "#fff", padding: "7px 11px" }}>{label}</button>)}
-        </div>
-        {error && <p style={{ color: "#c62828", marginTop: 12 }}>⚠️ {error}</p>}
-      </section>
+        {error && <p style={{color:"#c62828",marginTop:12}}>⚠️ {error}</p>}
 
-      <section className="card">
-        <div className="cardhead"><h2>{jobs.length} annonce(s)</h2><span>Analyse IA disponible dans Détail</span></div>
-        <div className="table">
-          <div className="row head"><span>Offre</span><span>Lieu</span><span>Téléphone</span><span>Conditions</span><span>ID</span><span>Action</span></div>
+        <div className="table" style={{marginTop:14}}>
+          <div className="row head">
+            <span>Offre</span>
+            <span>Téléphone</span>
+            <span>Salaire</span>
+            <span>ID</span>
+            <span>Action</span>
+          </div>
+
           {jobs.map(job => (
             <div className="row" key={job.id}>
-              <span className="job">{job.title}</span>
-              <span>{job.address || job.region}</span>
-              <span>{job.phone ? <>{job.phone}{job.contactLabel ? <small style={{display:"block",color:"#777"}}>{job.contactLabel}</small> : null}</> : "—"}</span>
+              <span className="job">{job.titleFr || job.title}</span>
+              <span>
+                {job.phone ? (
+                  <>
+                    <a href={`tel:${job.phone.replace(/[^0-9+]/g, "")}`}>{job.phone}</a>
+                    {job.contactLabel ? <small style={{display:"block",color:"#777"}}>{job.contactLabel}</small> : null}
+                  </>
+                ) : "—"}
+              </span>
               <span>{job.salary || "—"}</span>
-              <span style={{ fontSize: 11 }}>{job.id}</span>
-              <button onClick={() => openDetail(job)} style={{ border: 0, cursor: "pointer", textAlign: "center", borderRadius: 9, background: "#ff5722", color: "#fff", padding: "9px 10px", fontWeight: 700 }}>Détail</button>
+              <span style={{fontSize:11}}>{job.id}</span>
+              <button
+                onClick={() => openDetail(job)}
+                style={{border:0,cursor:"pointer",textAlign:"center",borderRadius:9,background:"#ff5722",color:"#fff",padding:"9px 10px",fontWeight:700}}
+              >
+                Détail
+              </button>
             </div>
           ))}
-          {!loading && jobs.length === 0 && <p style={{ padding: "18px 0" }}>Lance une recherche pour récupérer les annonces.</p>}
+
+          {!loading && jobs.length === 0 && !error && (
+            <p style={{padding:"18px 0"}}>Aucune offre de soudage trouvée.</p>
+          )}
         </div>
       </section>
 
@@ -192,36 +212,45 @@ export default function LivingBlogJobs() {
         <div
           onClick={() => setSelectedJob(null)}
           style={{
-            position: "fixed", inset: 0, zIndex: 1000,
-            background: "rgba(0,0,0,.55)", backdropFilter: "blur(5px)",
-            display: "flex", alignItems: "center", justifyContent: "center", padding: 20
+            position:"fixed",inset:0,zIndex:1000,background:"rgba(0,0,0,.55)",
+            backdropFilter:"blur(5px)",display:"flex",alignItems:"center",
+            justifyContent:"center",padding:20
           }}
         >
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              width: "min(900px, 100%)", maxHeight: "90vh", overflowY: "auto",
-              background: "#fff", borderRadius: 20, boxShadow: "0 25px 80px rgba(0,0,0,.3)",
-              padding: 28, animation: "fadeIn .2s ease-out"
+              width:"min(900px,100%)",maxHeight:"90vh",overflowY:"auto",
+              background:"#fff",borderRadius:20,boxShadow:"0 25px 80px rgba(0,0,0,.3)",
+              padding:28,animation:"fadeIn .2s ease-out"
             }}
           >
             <div style={{display:"flex",justifyContent:"space-between",gap:16,alignItems:"flex-start"}}>
               <div>
                 <span className="eyebrow">OFFRE LIVINGBLOG • EXTRACTION IA</span>
-                <h2 style={{fontSize:26,marginTop:8}}>{ai?.title || detail?.title || selectedJob.title}</h2>
+                <h2 style={{fontSize:26,marginTop:8}}>{ai?.title || selectedJob.titleFr || detail?.title || selectedJob.title}</h2>
                 <p style={{margin:"4px 0"}}>ID : {selectedJob.id}</p>
               </div>
               <button onClick={() => setSelectedJob(null)} style={{border:0,background:"#eee",borderRadius:999,width:40,height:40,fontSize:22,cursor:"pointer"}}>×</button>
             </div>
 
-            {detailLoading && <div className="card" style={{marginTop:18,textAlign:"center"}}><h2>⏳ Chargement de l'annonce...</h2></div>}
-            {detailError && <div className="card" style={{marginTop:18}}><p style={{color:"#c62828"}}>⚠️ {detailError}</p></div>}
+            {detailLoading && (
+              <div className="card" style={{marginTop:18,textAlign:"center"}}>
+                <h2>⏳ Chargement de l'annonce...</h2>
+              </div>
+            )}
+
+            {detailError && (
+              <div className="card" style={{marginTop:18}}>
+                <p style={{color:"#c62828"}}>⚠️ {detailError}</p>
+              </div>
+            )}
 
             {!ai && !aiLoading && !detailLoading && (
               <div style={{marginTop:18,padding:18,borderRadius:14,background:"#fff7f2",border:"1px solid #ffd7c2"}}>
-                <h3 style={{marginTop:0}}>🤖 Extraire les informations avec l'IA</h3>
+                <h3 style={{marginTop:0}}>🤖 Extraction intelligente</h3>
                 <p style={{margin:"8px 0 14px",color:"#555"}}>
-                  L'IA lit l'annonce originale et extrait uniquement les informations présentes. Les champs absents restent vides.
+                  L'IA lit l'annonce originale et récupère uniquement les informations réellement présentes.
                 </p>
                 <button onClick={analyzeWithAI} style={{border:0,borderRadius:10,background:"#ff5722",color:"#fff",padding:"12px 18px",fontWeight:700,cursor:"pointer"}}>
                   🤖 Analyser cette annonce
@@ -232,14 +261,13 @@ export default function LivingBlogJobs() {
             {aiLoading && (
               <div className="card" style={{marginTop:18,textAlign:"center"}}>
                 <h2>🤖 Analyse IA en cours...</h2>
-                <p>Extraction des informations utiles et traduction en français.</p>
+                <p>Extraction et traduction en français.</p>
               </div>
             )}
 
             {aiError && (
               <div className="card" style={{marginTop:18}}>
                 <p style={{color:"#c62828"}}>⚠️ {aiError}</p>
-                <p style={{fontSize:13,color:"#666"}}>Vérifie que HF_TOKEN est configuré dans les variables d'environnement Vercel.</p>
               </div>
             )}
 
@@ -279,21 +307,11 @@ export default function LivingBlogJobs() {
                 )}
 
                 <div style={{display:"flex",justifyContent:"flex-end",gap:10,marginTop:20,flexWrap:"wrap"}}>
-                  <button onClick={() => {setAi(null); setAiError("");}} style={{border:"1px solid #ddd",padding:"10px 15px",borderRadius:10,background:"#fff"}}>↻ Refaire l'analyse</button>
+                  <button onClick={() => {setAi(null);setAiError("");}} style={{border:"1px solid #ddd",padding:"10px 15px",borderRadius:10,background:"#fff"}}>↻ Refaire</button>
                   <a href={detail?.url || selectedJob.url} target="_blank" rel="noreferrer" style={{textDecoration:"none",padding:"10px 15px",borderRadius:10,background:"#eee",color:"#222"}}>Voir l'original</a>
                   <button onClick={() => setSelectedJob(null)} style={{border:0,padding:"10px 15px",borderRadius:10,background:"#ff5722",color:"#fff",fontWeight:700}}>Fermer</button>
                 </div>
               </>
-            )}
-
-            {!ai && !aiLoading && detail && (
-              <div style={{marginTop:18,padding:16,borderRadius:12,background:"#fafafa",border:"1px solid #eee"}}>
-                <h3>📄 Aperçu original</h3>
-                <p style={{color:"#666",lineHeight:1.7}}>
-                  L'analyse IA n'a pas encore été lancée. Le texte original est conservé pour vérification.
-                </p>
-                <a href={detail.url} target="_blank" rel="noreferrer" style={{display:"inline-block",marginTop:8,textDecoration:"none",padding:"10px 15px",borderRadius:10,background:"#eee",color:"#222"}}>Voir l'original</a>
-              </div>
             )}
           </div>
         </div>
