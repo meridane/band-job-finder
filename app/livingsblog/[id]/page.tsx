@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 type Detail = {
   id: string;
@@ -13,13 +14,15 @@ type Detail = {
   descriptionFr: string;
 };
 
-export default function JobDetail({ params }: { params: { id: string } }) {
+export default function JobDetail() {
+  const params = useParams<{ id: string }>();
+  const id = params?.id || "";
   const [data, setData] = React.useState<Detail | null>(null);
   const [error, setError] = React.useState("");
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    fetch(`/api/livingsblog/detail?id=${encodeURIComponent(params.id)}`)
+    fetch(`/api/livingsblog/detail?id=${encodeURIComponent(id)}`)
       .then(async r => {
         const json = await r.json();
         if (!r.ok || !json.ok) throw new Error(json.error || "Impossible de charger l'offre");
@@ -28,7 +31,7 @@ export default function JobDetail({ params }: { params: { id: string } }) {
       .then(setData)
       .catch(e => setError(e instanceof Error ? e.message : "Erreur"))
       .finally(() => setLoading(false));
-  }, [params.id]);
+  }, [id]);
 
   if (loading) return <main className="shell"><div className="card"><h2>⏳ Chargement de l'offre...</h2></div></main>;
   if (error) return <main className="shell"><div className="card"><h2>⚠️ Erreur</h2><p>{error}</p><Link href="/livingsblog">← Retour</Link></div></main>;
