@@ -77,7 +77,12 @@ Règles impératives :
 - Conserve les numéros de téléphone exactement tels qu'ils apparaissent.
 - "팩스" doit être placé dans fax, même si c'est dans la section 담당자 정보.
 - Un numéro sous 담당자 정보 peut être un téléphone ou un fax selon son libellé.
-- Traduis les valeurs en français de façon courte et naturelle.
+- IMPORTANT : toutes les valeurs destinées à être affichées à l'utilisateur doivent être en FRANÇAIS, même si la source est entièrement en coréen.
+- Traduis réellement les intitulés coréens : par exemple "전기공정원(아크, 알곤, 티그용접원)" devient "Soudeur / opérateur de procédé électrique (arc, argon/TIG)", et "기타 1차 비철금속 제조업" devient "Autre fabrication de métaux non ferreux de première transformation".
+- Traduis aussi title, job, industry, location, salary_type, experience, education, contract, working_hours, working_days, accommodation, meal, visa, application_method et summary_fr.
+- Pour location, utilise si possible un format français comme "Busan, Gangseo-gu".
+- Ne laisse pas de coréen dans ces champs, sauf un nom propre indispensable à l'identification.
+- Les exceptions sont : phone, fax, address et company peuvent conserver leur forme originale pour éviter toute perte d'information.
 - Conserve les noms propres, adresses et noms d'entreprise autant que possible.
 - salary_type doit être l'un de : "horaire", "journalier", "mensuel", "annuel", "autre", ou null.
 - welding_related=true seulement si l'annonce concerne réellement le soudage, un poste de soudeur ou une activité où le soudage est explicitement demandé.
