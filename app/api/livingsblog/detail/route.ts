@@ -45,7 +45,6 @@ const labels: Record<string, string> = {
   "자격요건": "Conditions / qualifications",
   "우대사항": "Profil recherché",
   "복리후생": "Avantages",
-  "사업내용": "Activité",
   "담당자 정보": "Informations du responsable",
   "전화": "Téléphone",
   "연락처": "Contact",
