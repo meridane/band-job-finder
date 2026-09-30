@@ -24,60 +24,95 @@ CO₂ 및 아르곤(알곤) 용접 경력이 6년 정도 있습니다.
 성실하게 오래 일할 수 있습니다.
 감사합니다.`;
 
-function openSms(phone: string) {
-  const normalized = phone.replace(/[^0-9+]/g, "");
-  window.location.href = `sms:${normalized}?body=${encodeURIComponent(message)}`;
-}
+const STORAGE_KEY = "band-job-finder-sms-sent";
 
 export default function ContactsPage() {
+  const [sent, setSent] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      if (Array.isArray(saved)) setSent(saved);
+    } catch {}
+  }, []);
+
+  function sendSms(phone: string) {
+    const normalized = phone.replace(/[^0-9+]/g, "");
+    const next = sent.includes(phone) ? sent : [...sent, phone];
+
+    setSent(next);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+
+    window.location.href = `sms:${normalized}?body=${encodeURIComponent(message)}`;
+  }
+
+  function resetSent() {
+    setSent([]);
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
   return (
     <main className="shell">
       <header>
         <div>
           <span className="eyebrow">BAND JOB FINDER</span>
           <h1>Contacts soudeurs</h1>
-          <p>Appuie sur un numéro pour ouvrir directement le SMS avec ton message de candidature déjà rempli.</p>
+          <p>Appuie sur <b>Envoyer SMS</b> pour ouvrir Messages avec ton texte déjà rempli.</p>
         </div>
-        <Link href="/" style={{textDecoration:"none",padding:"10px 14px",borderRadius:10,background:"#111",color:"#fff",fontWeight:700}}>
-          ← Retour
-        </Link>
+        <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          <button onClick={resetSent} style={{padding:"10px 14px",borderRadius:10,border:"1px solid #ddd",background:"#fff",fontWeight:700,cursor:"pointer"}}>
+            Réinitialiser
+          </button>
+          <Link href="/" style={{textDecoration:"none",padding:"10px 14px",borderRadius:10,background:"#111",color:"#fff",fontWeight:700}}>
+            ← Retour
+          </Link>
+        </div>
       </header>
 
       <section className="card">
         <div className="cardhead">
           <h2>{contacts.length} contacts</h2>
-          <span>Message prérempli · Envoi manuel</span>
+          <span>{sent.length} candidature(s) marquée(s) SENDED</span>
         </div>
 
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12,marginTop:18}}>
-          {contacts.map((phone, index) => (
-            <button
-              key={phone}
-              onClick={() => openSms(phone)}
-              style={{
-                width:"100%", textAlign:"left", cursor:"pointer",
-                border:"1px solid #e6e8eb", borderRadius:14,
-                background:"#fff", padding:"15px 16px",
-                fontSize:16, fontWeight:700, color:"#171717"
-              }}
-            >
-              <span style={{color:"#ff5722",marginRight:10}}>📱</span>
-              {phone}
-              <small style={{display:"block",marginTop:5,color:"#667085",fontWeight:400}}>
-                Contact {index + 1} · Écrire par SMS
-              </small>
-            </button>
-          ))}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:12,marginTop:18}}>
+          {contacts.map((phone, index) => {
+            const isSent = sent.includes(phone);
+
+            return (
+              <div key={phone} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,border:"1px solid #e6e8eb",borderRadius:14,background:"#fff",padding:"12px 14px"}}>
+                <div>
+                  <div style={{fontSize:16,fontWeight:700}}>
+                    <span style={{color:"#ff5722",marginRight:8}}>📱</span>{phone}
+                  </div>
+                  <small style={{display:"block",marginTop:5,color:"#667085"}}>
+                    Contact {index + 1}
+                  </small>
+                </div>
+
+                <button
+                  onClick={() => sendSms(phone)}
+                  style={{
+                    minWidth:125,border:0,borderRadius:10,padding:"11px 12px",
+                    background:isSent ? "#16a34a" : "#dc2626",
+                    color:"#fff",fontWeight:800,cursor:"pointer"
+                  }}
+                >
+                  {isSent ? "✓ SENDED" : "📤 Envoyer SMS"}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </section>
 
       <section className="card">
-        <h2>Message envoyé dans le composeur SMS</h2>
+        <h2>Message de candidature</h2>
         <pre style={{whiteSpace:"pre-wrap",fontFamily:"inherit",lineHeight:1.7,color:"#475467",background:"#f8fafc",padding:16,borderRadius:12}}>
           {message}
         </pre>
         <p style={{fontSize:13}}>
-          Le site n'envoie pas automatiquement le SMS : Android ouvre l'application Messages avec le numéro et le texte préremplis. Tu peux vérifier puis appuyer sur Envoyer.
+          Le clic ouvre l'application Messages avec le numéro et le texte préremplis. Le bouton devient vert <b>SENDED</b> et garde cet état même après ton retour sur la page.
         </p>
       </section>
     </main>
