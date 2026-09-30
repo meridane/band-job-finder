@@ -21,7 +21,38 @@ function absUrl(href: string) {
   return new URL(href, BASE).toString();
 }
 
-function parseJobs(html: string, keyword: string, region: string) {
+function extractContactInfo(text: string) {
+  const marker = text.indexOf("담당자 정보");
+  if (marker < 0) return { contactNumber: "", contactLabel: "" };
+
+  // 담당자 정보 영역 자체를 우선 사용합니다.
+  // "팩스"라고 적혀 있어도 번호를 버리지 않고 label과 함께 보존합니다.
+  const block = text.slice(marker, marker + 800);
+  const match = block.match(/(전화|연락처|휴대폰|휴대전화|핸드폰|팩스|전화번호)?\s*[:：]?\s*(0\d{1,2}[ -]?\d{3,4}[ -]?\d{4})/);
+  if (!match) return { contactNumber: "", contactLabel: "" };
+
+  return {
+    contactNumber: match[2],
+    contactLabel: match[1] || "담당자 연락처",
+  };
+}
+
+async function fetchDetailContact(url: string) {
+  try {
+    const response = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; JobFinder/1.0)" },
+      cache: "no-store",
+    });
+    if (!response.ok) return { contactNumber: "", contactLabel: "" };
+
+    const detailHtml = await response.text();
+    return extractContactInfo(stripHtml(detailHtml));
+  } catch {
+    return { contactNumber: "", contactLabel: "" };
+  }
+}
+
+async function parseJobs(html: string, keyword: string, region: string) {
   const jobs: Array<Record<string, string>> = [];
   const seen = new Set<string>();
   const linkRe = /<a\b[^>]*href=["']([^"']*job_detail=([^&"'#]+)[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi;
@@ -51,7 +82,19 @@ function parseJobs(html: string, keyword: string, region: string) {
       url: href,
     });
   }
-  return jobs.slice(0, 100);
+  const limited = jobs.slice(0, 30);
+  const enriched = await Promise.all(
+    limited.map(async (job) => {
+      const contact = await fetchDetailContact(job.url);
+      return {
+        ...job,
+        phone: contact.contactNumber || job.phone,
+        contactLabel: contact.contactLabel || (job.phone ? "휴대폰" : ""),
+      };
+    })
+  );
+
+  return enriched;
 }
 
 export async function GET(req: NextRequest) {
@@ -72,7 +115,7 @@ export async function GET(req: NextRequest) {
     }
 
     const html = await response.text();
-    const jobs = parseJobs(html, keyword, region);
+    const jobs = await parseJobs(html, keyword, region);
     return NextResponse.json({ ok: true, source: "livingsblog", url: sourceUrl.toString(), count: jobs.length, jobs });
   } catch (error) {
     return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
