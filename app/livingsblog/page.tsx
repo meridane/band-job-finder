@@ -7,6 +7,7 @@ type Job = {
   id: string;
   title: string;
   phone: string;
+  contactLabel?: string;
   salary: string;
   address: string;
   keyword: string;
@@ -82,10 +83,10 @@ export default function LivingBlogJobs() {
             <div className="row" key={job.id}>
               <span className="job">{job.title}</span>
               <span>{job.address || job.region}</span>
-              <span>{job.phone || "—"}</span>
+              <span>{job.phone ? <>{job.phone}{job.contactLabel ? <small style={{display:"block",color:"#777"}}>{job.contactLabel}</small> : null}</> : "—"}</span>
               <span>{job.salary || "—"}</span>
               <span style={{ fontSize: 11 }}>{job.id}</span>
-              <a href={job.url} target="_blank" rel="noreferrer" style={{ textDecoration: "none", textAlign: "center", borderRadius: 9, background: "#171717", color: "#fff", padding: "9px 10px", fontWeight: 700 }}>Détail</a>
+              <Link href={`/livingsblog/${encodeURIComponent(job.id)}`} style={{ textDecoration: "none", textAlign: "center", borderRadius: 9, background: "#ff5722", color: "#fff", padding: "9px 10px", fontWeight: 700 }}>Détail FR</Link>
             </div>
           ))}
           {!loading && jobs.length === 0 && <p style={{ padding: "18px 0" }}>Lance une recherche pour récupérer les annonces.</p>}
