@@ -39,7 +39,7 @@ export default function Home(){
   setParsedPage(results);
  };
  return <main className="shell">
-  <header><div><span className="eyebrow">BAND JOB FINDER</span><h1>Offres détectées</h1><p>Les annonces correspondant à tes critères apparaîtront ici avec le numéro du responsable et le message de candidature à envoyer.</p></div><div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}><Link href="/contacts" style={{textDecoration:"none",padding:"10px 14px",borderRadius:10,background:"#ff5722",color:"#fff",fontWeight:700}}>📱 Contacts & SMS</Link><span className="status">SMS automatique désactivé</span></div></header>
+  <header><div><span className="eyebrow">BAND JOB FINDER</span><h1>Offres détectées</h1><p>Les annonces correspondant à tes critères apparaîtront ici avec le numéro du responsable et le message de candidature à envoyer.</p></div><div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}><div style={{display:"flex",gap:10,flexWrap:"wrap"}}><Link href="/livingsblog" style={{textDecoration:"none",padding:"10px 14px",borderRadius:10,background:"#171717",color:"#fff",fontWeight:700}}>🔎 Livingsblog</Link><Link href="/contacts" style={{textDecoration:"none",padding:"10px 14px",borderRadius:10,background:"#ff5722",color:"#fff",fontWeight:700}}>📱 Contacts & SMS</Link></div><span className="status">SMS automatique désactivé</span></div></header>
   <section className="stats">
    <div><b>0</b><span>Nouvelles offres</span></div><div><b>0</b><span>À traiter</span></div><div><b>0</b><span>Candidatures préparées</span></div><div><b>7</b><span>Filtres actifs</span></div>
   </section>
